@@ -39,17 +39,17 @@ export default async function AdminLayout({
   if (profile?.role !== "admin") redirect("/dashboard");
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-orange-50 via-white to-slate-100">
-      <aside className="hidden w-72 flex-col border-r border-orange-200/80 bg-gradient-to-b from-white via-orange-50 to-amber-50 shadow-[inset_-1px_0_0_rgba(251,146,60,0.12)] lg:flex">
-        <div className="border-b border-orange-200/80 p-6">
+    <div className="flex min-h-screen bg-slate-900">
+      <aside className="hidden w-72 flex-col border-r-2 border-orange-500/50 bg-slate-800 shadow-xl lg:flex">
+        <div className="border-b-2 border-orange-500/50 p-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 shadow-sm">
-              <Shield className="h-6 w-6 text-white" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg">
+              <Shield className="h-7 w-7 text-white font-bold" />
             </div>
             <div>
-              <h1 className="text-sm font-black tracking-wide text-slate-900">ShriShubh</h1>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-700">
-                Admin Portal
+              <h1 className="text-lg font-black tracking-wide text-orange-400">ShriShubh</h1>
+              <p className="text-xs font-bold uppercase tracking-widest text-orange-500">
+                Admin Panel
               </p>
             </div>
           </div>
@@ -63,9 +63,9 @@ export default async function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className="group flex items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700 hover:shadow-sm"
+                className="group flex items-center gap-3 rounded-lg border-2 border-transparent px-4 py-3 text-sm font-bold text-gray-300 transition-all duration-200 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-400"
               >
-                <Icon className="h-5 w-5 text-orange-500 transition group-hover:text-orange-600" />
+                <Icon className="h-5 w-5 text-orange-500 transition group-hover:text-orange-400" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -74,22 +74,20 @@ export default async function AdminLayout({
       </aside>
 
       <main className="flex-1">
-        <div className="sticky top-0 z-40 border-b border-orange-200/80 bg-white/90 backdrop-blur-xl">
+        <div className="sticky top-0 z-40 border-b-2 border-orange-500/50 bg-slate-800/95 backdrop-blur-xl shadow-lg">
           <div className="container-page flex min-h-20 items-center justify-between gap-4 px-4 py-3">
-            <h2 className="text-xl font-black tracking-tight text-slate-900">Admin Portal</h2>
+            <h2 className="text-2xl font-black tracking-tight text-orange-400">Admin Portal</h2>
             <Link
               href="/"
-              className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-700 transition hover:border-orange-300 hover:bg-orange-100"
+              className="rounded-lg border-2 border-orange-500 bg-orange-500/20 px-4 py-2 text-sm font-bold text-orange-400 transition hover:border-orange-400 hover:bg-orange-500/30"
             >
-              Back to website
+              ← Back to website
             </Link>
           </div>
         </div>
 
         <div className="container-page py-8">
-          <div className="rounded-2xl border border-orange-100 bg-white/80 p-5 shadow-sm shadow-orange-100/50">
-            {children}
-          </div>
+          {children}
         </div>
       </main>
     </div>
