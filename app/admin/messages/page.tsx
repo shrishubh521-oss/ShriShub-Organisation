@@ -18,24 +18,35 @@ export default async function AdminMessagesPage() {
 
   if (profile?.role !== "admin") redirect("/dashboard");
 
-  // Get all customer messages grouped by user
   const { data: messages } = await supabase
     .from("messages")
-    .select("id, user_id, subject, body, reply, replied_at, created_at, users(id, email)")
+    .select("id, user_id, subject, body, reply, replied_at, created_at")
     .order("created_at", { ascending: false });
 
-  // Group messages by user_id
-  const groupedMessages = messages?.reduce(
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .in(
+      "id",
+      (messages ?? []).map((message) => message.user_id),
+    );
+
+  const customerNames = Object.fromEntries(
+    (profiles ?? []).map((item) => [item.id, item.full_name || "Customer"]),
+  );
+
+  const groupedMessages = (messages ?? []).reduce(
     (acc, msg) => {
       const userId = msg.user_id;
-      if (!acc[userId]) {
-        acc[userId] = [];
-      }
-      acc[userId].push(msg);
+      if (!acc[userId]) acc[userId] = [];
+      acc[userId].push({
+        ...msg,
+        customerName: customerNames[msg.user_id] || "Customer",
+      });
       return acc;
     },
     {} as Record<string, any[]>,
-  ) || {};
+  );
 
   return (
     <div className="space-y-6">
@@ -57,6 +68,7 @@ export default async function AdminMessagesPage() {
             <MessageThread
               key={userId}
               userId={userId}
+              customerName={userMessages[0]?.customerName ?? "Customer"}
               messages={userMessages}
             />
           ))}
