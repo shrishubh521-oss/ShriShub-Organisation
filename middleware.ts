@@ -1,83 +1,66 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase-env";
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request,
-  });
+  let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
+  const supabaseUrl = getSupabaseUrl();
+  const supabaseAnonKey = getSupabaseAnonKey();
 
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return response;
+  }
 
-          response = NextResponse.next({
-            request,
-          });
-
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
-          });
-        },
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
       },
-    }
-  );
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+
+        response = NextResponse.next({ request });
+
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
 
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
 
-  const customerRoutes = [
-    "/dashboard",
-    "/order",
-    "/contract",
-    "/payment",
-    "/messages",
-  ];
-
-  const isCustomerRoute = customerRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
+  const customerRoutes = ["/dashboard", "/order", "/contract", "/payment", "/messages"];
+  const isCustomerRoute = customerRoutes.some((route) => pathname.startsWith(route));
   const isAdminRoute = pathname.startsWith("/admin");
 
-  /*
-   * Customer protected routes
-   */
-  if (isCustomerRoute && !user) {
+  if ((isCustomerRoute || isAdminRoute) && (!user || error)) {
     const loginUrl = request.nextUrl.clone();
-
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("next", pathname);
-
     return NextResponse.redirect(loginUrl);
   }
 
-  /*
-   * Admin route
-   *
-   * Authentication is checked here.
-   * Actual admin-role verification should also happen
-   * on the server/admin pages.
-   */
-  if (isAdminRoute && !user) {
-    const loginUrl = request.nextUrl.clone();
+  if (isAdminRoute && user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("next", pathname);
-
-    return NextResponse.redirect(loginUrl);
+    if (profile?.role !== "admin") {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/dashboard";
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return response;

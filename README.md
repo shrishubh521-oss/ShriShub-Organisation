@@ -1,47 +1,138 @@
-# ShriShubh Platform
+"use client";
 
-A clean starting point for a customer-facing website development marketplace.
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase-browser";
+import { LogOut, LayoutDashboard, MessageSquare, Shield } from "lucide-react";
 
-## Included
+export default function Navbar() {
+  const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-- Next.js + TypeScript
-- Responsive Tailwind-based UI
-- Supabase authentication and PostgreSQL schema
-- Customer registration/login
-- Service selection and requirement form
-- Fixed starting pricing
-- Digital contract workflow
-- Payment-ready checkout page
-- Customer dashboard
-- Customer messages
-- Private admin dashboard
-- Admin orders/customers/contact messages
-- Server-side admin role checks
-- Zod validation for contact API
+  async function fetchUserRole(userId: string) {
+    const supabase = createClient();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle();
 
-## Setup
+    return profile?.role ?? null;
+  }
 
-1. Install Node.js 20.9+.
-2. Create a Supabase project.
-3. Open `supabase/schema.sql` in Supabase SQL Editor and run it.
-4. Copy `.env.example` to `.env.local`.
-5. Add your Supabase URL and anon key.
-6. Run `npm install`.
-7. Run `npm run dev`.
-8. Open `http://localhost:3000`.
-9. Register your owner account, then promote that user's UUID to `admin` using the SQL comment in `supabase/schema.sql`.
+  useEffect(() => {
+    const supabase = createClient();
 
-## Important security note
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-The admin area is intentionally not included in the public navbar. The `/admin` routes also check the user's role server-side, and Supabase RLS policies protect database access.
+      if (user) {
+        setUser(user);
+        setUserRole(await fetchUserRole(user.id));
+      } else {
+        setUser(null);
+        setUserRole(null);
+      }
 
-## Payment
+      setLoading(false);
+    }
 
-The included payment page is a provider-ready placeholder. Before accepting real money, connect a payment provider with server-side secrets and verified webhooks. Do not put secret payment keys in client-side code.
+    loadUser();
 
-## Branding
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
 
-Business: ShriShubh
-Founders: Shubham Sandeep Salvi and Shriom Suresh Chinkate
-Email: shrishubh521@gmail.com
-Location: Maharashtra, India
+      if (nextUser) {
+        setUserRole(await fetchUserRole(nextUser.id));
+      } else {
+        setUserRole(null);
+      }
+
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function logout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setUserRole(null);
+    window.location.href = "/";
+  }
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-slate-200/10 bg-slate-950/90 backdrop-blur-xl">
+      <div className="container-page flex min-h-20 items-center justify-between gap-6">
+        <Link href="/" className="flex shrink-0 items-center">
+          <img src="/logo.png" alt="ShriShubh" className="h-12 w-auto object-contain" />
+        </Link>
+
+        <nav className="hidden items-center gap-7 text-sm font-medium text-slate-200 lg:flex">
+          <Link href="/services" className="transition hover:text-yellow-300">Services</Link>
+          <Link href="/pricing" className="transition hover:text-yellow-300">Pricing</Link>
+          <Link href="/how-it-works" className="transition hover:text-yellow-300">How it works</Link>
+          <Link href="/about" className="transition hover:text-yellow-300">About</Link>
+          <Link href="/contact" className="transition hover:text-yellow-300">Contact</Link>
+        </nav>
+
+        <div className="flex items-center gap-3">
+          {loading ? (
+            <div className="h-10 w-24 animate-pulse rounded-xl bg-slate-800" />
+          ) : user ? (
+            <>
+              {userRole === "admin" && (
+                <Link
+                  href="/admin"
+                  className="hidden items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-yellow-300 transition hover:bg-yellow-300/10 sm:flex"
+                  title="Admin Portal"
+                >
+                  <Shield size={16} />
+                  Admin
+                </Link>
+              )}
+
+              <Link
+                href="/dashboard"
+                className="hidden items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 sm:flex"
+              >
+                <LayoutDashboard size={16} />
+                Dashboard
+              </Link>
+
+              <Link
+                href="/messages"
+                className="hidden items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 sm:flex"
+              >
+                <MessageSquare size={16} />
+                Messages
+              </Link>
+
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-red-500/50 hover:bg-red-500/10"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="hidden text-sm font-semibold text-slate-200 transition hover:text-yellow-300 sm:block">Login</Link>
+              <Link href="/register" className="rounded-xl bg-yellow-400 px-5 py-2.5 text-sm font-bold text-slate-950 shadow-sm transition hover:bg-yellow-300 hover:shadow-md">Start a project</Link>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
