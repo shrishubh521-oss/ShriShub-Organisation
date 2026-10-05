@@ -1,19 +1,91 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
+import {
+  BarChart3,
+  MessageSquare,
+  Package,
+  Settings,
+  Shield,
+  Users,
+} from "lucide-react";
 
-export default async function AdminPage() {
+const menuItems = [
+  { href: "/admin", label: "Dashboard", icon: BarChart3 },
+  { href: "/admin/orders", label: "Orders", icon: Package },
+  { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/messages", label: "Messages", icon: MessageSquare },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
+];
+
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
   if (profile?.role !== "admin") redirect("/dashboard");
 
-  const [{ count: orders }, { count: customers }, { count: messages }] = await Promise.all([
-    supabase.from("orders").select("id", { count: "exact", head: true }),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "customer"),
-    supabase.from("contact_messages").select("id", { count: "exact", head: true }),
-  ]);
+  return (
+    <div className="flex min-h-screen bg-slate-50">
+      <aside className="hidden w-64 flex-col border-r border-slate-200/80 bg-white lg:flex">
+        <div className="border-b border-slate-200/80 p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
+              <Shield className="h-6 w-6 text-orange-600" />
+            </div>
+            <div>
+              <h1 className="text-sm font-black text-slate-900">ShriShubh</h1>
+              <p className="text-xs text-slate-500">Admin Portal</p>
+            </div>
+          </div>
+        </div>
 
-  return <div className="container-page py-16"><div className="flex items-end justify-between"><div><p className="text-sm text-yellow-300">Private administration</p><h1 className="mt-2 text-4xl font-black">Admin dashboard</h1></div></div><div className="mt-10 grid gap-5 md:grid-cols-3">{[["Orders", orders ?? 0, "/admin/orders"], ["Customers", customers ?? 0, "/admin/customers"], ["Messages", messages ?? 0, "/admin/messages"]].map(([title, value, href]) => <Link href={String(href)} key={String(title)} className="card p-6"><p className="text-sm text-slate-400">{title}</p><p className="mt-2 text-4xl font-black">{value}</p></Link>)}</div></div>;
+        <nav className="flex-1 space-y-2 p-4">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+              >
+                <Icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <main className="flex-1">
+        <div className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur">
+          <div className="container-page flex min-h-20 items-center justify-between">
+            <h2 className="text-xl font-black text-slate-900">Admin Portal</h2>
+            <Link
+              href="/"
+              className="text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+            >
+              Back to website
+            </Link>
+          </div>
+        </div>
+
+        <div className="container-page py-8">{children}</div>
+      </main>
+    </div>
+  );
 }
