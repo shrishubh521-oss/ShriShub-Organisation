@@ -10,114 +10,12 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-const AI_RESPONSES: Record<string, string> = {
-  pricing: `Our pricing is flexible and transparent. We offer:
-
-• Starter: $500-1000 for basic website
-• Professional: $1500-3000 for advanced features
-• Enterprise: Custom quotes for large projects
-
-Each package includes support and updates. Contact our sales team for a detailed quote.`,
-  
-  timeline: `Project timelines typically range from:
-
-• Starter: 2-3 weeks
-• Professional: 4-6 weeks
-• Enterprise: 8+ weeks
-
-Timeline depends on project complexity and your requirements. We'll discuss specifics during the initial consultation.`,
-  
-  process: `Our development process follows these steps:
-
-1. Discovery & Requirements (Week 1)
-2. Design & Mockups (Week 2)
-3. Development (Weeks 3-4)
-4. Testing & Refinement (Week 5)
-5. Launch & Support (Week 6+)
-
-We keep you updated throughout each phase.`,
-  
-  support: `We provide comprehensive support including:
-
-• Email support within 24 hours
-• Bug fixes and maintenance
-• Feature updates and enhancements
-• Annual hosting and security updates
-• Dedicated account manager for enterprise clients
-
-Contact our support team anytime through the Messages section.`,
-  
-  contact: `Need to reach our team? Here are your options:
-
-• Messages: Use the Messages page to contact our support team
-• Email: support@shrishubh.com
-• Portal: Access your projects and order status from your dashboard
-
-We respond to all inquiries within 24 hours.`,
-  
-  default: `I'm here to help! I can answer questions about:
-
-• Pricing and packages
-• Project timeline and process
-• Our development workflow
-• Support and maintenance
-• How to contact our team
-
-Try asking about any of these topics, or feel free to ask something else!`,
-};
-
-function findBestResponse(userMessage: string): string {
-  const lowerMessage = userMessage.toLowerCase();
-
-  if (
-    lowerMessage.includes("price") ||
-    lowerMessage.includes("cost") ||
-    lowerMessage.includes("payment")
-  ) {
-    return AI_RESPONSES.pricing;
-  }
-
-  if (
-    lowerMessage.includes("how long") ||
-    lowerMessage.includes("timeline") ||
-    lowerMessage.includes("schedule")
-  ) {
-    return AI_RESPONSES.timeline;
-  }
-
-  if (
-    lowerMessage.includes("process") ||
-    lowerMessage.includes("how do you") ||
-    lowerMessage.includes("workflow")
-  ) {
-    return AI_RESPONSES.process;
-  }
-
-  if (
-    lowerMessage.includes("support") ||
-    lowerMessage.includes("help") ||
-    lowerMessage.includes("maintenance")
-  ) {
-    return AI_RESPONSES.support;
-  }
-
-  if (
-    lowerMessage.includes("contact") ||
-    lowerMessage.includes("reach") ||
-    lowerMessage.includes("email")
-  ) {
-    return AI_RESPONSES.contact;
-  }
-
-  return AI_RESPONSES.default;
-}
-
 export default function AIChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: AI_RESPONSES.default,
+      content: "Hello! I'm ShriShubh's AI Assistant. I'm here to help answer your questions about our services, pricing, timeline, and more. How can I help you today?",
       timestamp: new Date(),
     },
   ]);
@@ -149,20 +47,43 @@ export default function AIChat() {
     setInput("");
     setLoading(true);
 
-    // Simulate a small delay for natural feel
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
 
-    const aiResponse = findBestResponse(input);
+      if (!response.ok) {
+        throw new Error("Failed to get response");
+      }
 
-    const assistantMessage: ChatMessage = {
-      id: `msg-${Date.now()}-ai`,
-      role: "assistant",
-      content: aiResponse,
-      timestamp: new Date(),
-    };
+      const data = await response.json();
 
-    setMessages((prev) => [...prev, assistantMessage]);
-    setLoading(false);
+      const assistantMessage: ChatMessage = {
+        id: `msg-${Date.now()}-ai`,
+        role: "assistant",
+        content: data.message || "I'm sorry, I couldn't process that. Please try again.",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      const errorMessage: ChatMessage = {
+        id: `msg-${Date.now()}-error`,
+        role: "assistant",
+        content: "Sorry, I encountered an error. Please try again or contact our support team.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
