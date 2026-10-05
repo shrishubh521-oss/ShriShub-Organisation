@@ -1,99 +1,153 @@
-@import "tailwindcss";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Zap } from "lucide-react";
 
-:root {
-  --background: #070b16;
-  --foreground: #f8fafc;
-  --muted: #94a3b8;
-  --card: #0f172a;
-  --line: rgba(148, 163, 184, 0.16);
-  --brand: #facc15;
-  --brand-dark: #a16207;
-}
+const benefits = [
+  "Clear scope before development",
+  "Fixed starting prices",
+  "Secure customer accounts",
+  "Project tracking and messaging",
+  "Contract-first workflow",
+  "Payment-ready architecture",
+];
 
-* {
-  box-sizing: border-box;
-}
+const services = [
+  { title: "Business Websites", text: "Premium landing pages and conversion-focused websites built for growth." },
+  { title: "Portfolio & Brand Sites", text: "Clean, modern digital presence for agencies, founders, and creators." },
+  { title: "Custom Web Products", text: "Flexible website builds tailored to your workflow and customer journey." },
+];
 
-html {
-  scroll-behavior: smooth;
-}
+export default function Home() {
+  return (
+    <>
+      <section className="relative overflow-hidden border-b border-slate-200/10 bg-slate-950">
+        <div className="container-page py-20 md:py-28">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+            <div>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-yellow-300/30 bg-yellow-300/10 px-3 py-1.5 text-xs font-bold text-yellow-200">
+                <Sparkles size={14} /> Modern websites. Simple process.
+              </div>
 
-body {
-  margin: 0;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+              <h1 className="max-w-3xl text-5xl font-black tracking-tight text-white md:text-7xl">
+                Your idea deserves a <span className="text-yellow-300">better website.</span>
+              </h1>
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+                ShriShubh helps businesses, creators, startups, and individuals turn requirements into polished websites and digital experiences that are clear, modern, and conversion-ready.
+              </p>
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/order" className="btn-primary">
+                  Start your project <ArrowRight size={18} />
+                </Link>
+                <Link href="/pricing" className="btn-secondary">
+                  View pricing
+                </Link>
+              </div>
+            </div>
 
-.container-page {
-  width: min(1120px, calc(100% - 32px));
-  margin: 0 auto;
-}
+            <div className="card p-5 md:p-7">
+              <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6">
+                <div className="mb-5 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Launch plan</p>
+                    <h2 className="mt-2 text-2xl font-black text-white">Website Builder</h2>
+                  </div>
+                  <div className="rounded-full bg-yellow-300/15 px-3 py-1 text-sm font-bold text-yellow-200">
+                    3 Steps
+                  </div>
+                </div>
 
-.card {
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  background: rgba(15, 23, 42, 0.78);
-  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.22);
-}
+                <div className="space-y-4">
+                  {[
+                    "Tell us your business goals",
+                    "Review your project scope and pricing",
+                    "Launch your polished website",
+                  ].map((item, index) => (
+                    <div key={item} className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-300 text-sm font-black text-slate-900">
+                        {index + 1}
+                      </div>
+                      <span className="text-sm font-medium text-slate-200">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border-radius: 12px;
-  background: var(--brand);
-  color: #111827;
-  padding: 11px 16px;
-  font-weight: 800;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
+      <section className="container-page py-16">
+        <div className="mb-8">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-yellow-300">What we do</p>
+          <h2 className="mt-3 text-3xl font-black text-white md:text-4xl">Built for modern businesses and founders.</h2>
+        </div>
 
-.btn-primary:hover {
-  transform: translateY(-1px);
-  opacity: 0.92;
-}
+        <div className="grid gap-5 md:grid-cols-3">
+          {services.map((service) => (
+            <div key={service.title} className="card p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-300/10 text-yellow-300">
+                <Zap size={22} />
+              </div>
+              <h3 className="mt-5 text-xl font-black text-white">{service.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-300">{service.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 11px 16px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.03);
-}
+      <section className="container-page pb-16">
+        <div className="card p-7 md:p-10">
+          <div className="grid gap-8 md:grid-cols-2 md:items-center">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-yellow-300">Why ShriShubh</p>
+              <h2 className="mt-3 text-3xl font-black text-white">A client journey designed to be easy.</h2>
+            </div>
 
-.input {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #0b1220;
-  color: white;
-  padding: 12px 14px;
-  outline: none;
-}
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {benefits.map((item) => (
+                <li key={item} className="flex gap-2 text-sm text-slate-200">
+                  <CheckCircle2 size={17} className="mt-0.5 text-yellow-300" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
 
-.input:focus {
-  border-color: rgba(250, 204, 21, 0.65);
-  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.08);
-}
+      <section className="container-page pb-20">
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            { title: "01. Share your vision", text: "Tell us what you need and what success looks like." },
+            { title: "02. Review your plan", text: "We define scope, price, and timeline before we build." },
+            { title: "03. Launch confidently", text: "Your website goes live with a smooth, professional handoff." },
+          ].map((step) => (
+            <div key={step.title} className="card p-6">
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-yellow-300/10 text-sm font-black text-yellow-200">
+                {step.title.split(".")[0]}
+              </div>
+              <h3 className="text-xl font-black text-white">{step.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-300">{step.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-.muted {
-  color: var(--muted);
+      <section className="container-page pb-20">
+        <div className="card p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-yellow-300">Ready to begin?</p>
+              <h2 className="mt-3 text-3xl font-black text-white">Let’s build your next website.</h2>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href="/order" className="btn-primary">Start a project</Link>
+              <Link href="/contact" className="btn-secondary">Contact us</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
 }
