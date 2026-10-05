@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
-import { LogOut, LayoutDashboard, MessageSquare, Shield } from "lucide-react";
+import { LogOut, LayoutDashboard, MessageSquare, Shield, MessageCircle } from "lucide-react";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -118,9 +118,17 @@ export default function Navbar() {
                 Messages
               </Link>
 
+              <Link
+                href="/chat"
+                className="hidden items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 sm:flex"
+              >
+                <MessageCircle size={16} />
+                AI Chat
+              </Link>
+
               <button
                 onClick={logout}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
               >
                 <LogOut size={16} />
                 Logout
